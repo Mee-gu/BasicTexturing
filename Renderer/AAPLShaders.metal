@@ -28,10 +28,15 @@ typedef struct
 
 } RasterizerData;
 
+struct VertexIn
+{
+    float2 position [[attribute(0)]];
+    float2 texcoord [[attribute(1)]];
+};
+
 // Vertex Function
 vertex RasterizerData
-vertexShader(uint vertexID [[ vertex_id ]],
-             constant AAPLVertex *vertexArray [[ buffer(AAPLVertexInputIndexVertices) ]],
+vertexShader(const VertexIn vertexIn [[stage_in]],
              constant vector_uint2 *viewportSizePointer  [[ buffer(AAPLVertexInputIndexViewportSize) ]])
 
 {
@@ -41,8 +46,9 @@ vertexShader(uint vertexID [[ vertex_id ]],
     // Index into our array of positions to get the current vertex
     //   Our positions are specified in pixel dimensions (i.e. a value of 100 is 100 pixels from
     //   the origin)
-    float2 pixelSpacePosition = vertexArray[vertexID].position.xy;
-
+    //float2 pixelSpacePosition = vertexArray[vertexID].position.xy;
+    float2 pixelSpacePosition = vertexIn.position;
+    
     // Get the size of the drawable so that we can convert to normalized device coordinates,
     float2 viewportSize = float2(*viewportSizePointer);
 
@@ -66,8 +72,8 @@ vertexShader(uint vertexID [[ vertex_id ]],
     // Pass our input textureCoordinate straight to our output RasterizerData. This value will be
     //   interpolated with the other textureCoordinate values in the vertices that make up the
     //   triangle.
-    out.textureCoordinate = vertexArray[vertexID].textureCoordinate;
-    
+    //out.textureCoordinate = vertexArray[vertexID].textureCoordinate;
+    out.textureCoordinate = vertexIn.texcoord;
     return out;
 }
 

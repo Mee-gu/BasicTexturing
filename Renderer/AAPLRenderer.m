@@ -57,6 +57,9 @@ Implementation of renderer class which performs Metal setup and per frame render
         NSString * imageManJiLocation = [[NSBundle mainBundle] pathForResource:@"manji" ofType:@"jpeg"];
         UIImage * uiimageManJi = [UIImage imageWithContentsOfFile:imageManJiLocation];// NSBundle加载
         const unsigned char* image = [self getUIImageData:uiimageManJi];
+        
+        
+        
 //        {
 //            NSString * path = [[NSBundle mainBundle] pathForResource:@"filename" ofType:@"jpg"];
 //            UIImage * img = [[UIImage alloc]initWithContentsOfFile:path];
@@ -66,7 +69,7 @@ Implementation of renderer class which performs Metal setup and per frame render
 //        }
 //
         _device = mtkView.device;
-
+        
         NSURL *imageFileLocation = [[NSBundle mainBundle] URLForResource:@"Image"
                                                            withExtension:@"tga"];
 
@@ -134,12 +137,24 @@ Implementation of renderer class which performs Metal setup and per frame render
         _vertices = [_device newBufferWithBytes:quadVertices
                                          length:sizeof(quadVertices)
                                         options:MTLResourceStorageModeShared];
-
+        
         // Calculate the number of vertices by dividing the byte length by the size of each vertex
         _numVertices = sizeof(quadVertices) / sizeof(AAPLVertex);
 
         /// Create our render pipeline
-
+        MTLVertexDescriptor *vertexDescriptor = [MTLVertexDescriptor vertexDescriptor];
+        vertexDescriptor.attributes[0].format = MTLVertexFormatFloat2;
+        vertexDescriptor.attributes[0].bufferIndex = 0;
+        vertexDescriptor.attributes[0].offset = offsetof(AAPLVertex, position);
+        
+        vertexDescriptor.attributes[1].format = MTLVertexFormatFloat2;
+        vertexDescriptor.attributes[1].bufferIndex = 0;
+        vertexDescriptor.attributes[1].offset = offsetof(AAPLVertex, textureCoordinate);
+        
+        vertexDescriptor.layouts[0].stride = sizeof(AAPLVertex);
+        vertexDescriptor.layouts[0].stepFunction = MTLVertexStepFunctionPerVertex;
+        
+        
         // Load all the shader files with a .metal file extension in the project
         id<MTLLibrary> defaultLibrary = [_device newDefaultLibrary];
 
@@ -154,6 +169,7 @@ Implementation of renderer class which performs Metal setup and per frame render
         pipelineStateDescriptor.label = @"Texturing Pipeline";
         pipelineStateDescriptor.vertexFunction = vertexFunction;
         pipelineStateDescriptor.fragmentFunction = fragmentFunction;
+        pipelineStateDescriptor.vertexDescriptor = vertexDescriptor;
         pipelineStateDescriptor.colorAttachments[0].pixelFormat = mtkView.colorPixelFormat;
 
         NSError *error = NULL;
