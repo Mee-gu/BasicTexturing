@@ -41,7 +41,7 @@ struct xlatMtlShaderUniform {
 // Vertex Function
 vertex RasterizerData
 vertexShader(const VertexIn vertexIn [[stage_in]],
-             constant vector_uint2 *viewportSizePointer  [[ buffer(AAPLVertexInputIndexViewportSize) ]])
+             constant vector_uint2 *viewportSizePointer  [[ buffer(1) ]])
 
 {
 
@@ -52,7 +52,7 @@ vertexShader(const VertexIn vertexIn [[stage_in]],
     //   the origin)
     //float2 pixelSpacePosition = vertexArray[vertexID].position.xy;
     float2 pixelSpacePosition = vertexIn.position;
-    
+
     // Get the size of the drawable so that we can convert to normalized device coordinates,
     float2 viewportSize = float2(*viewportSizePointer);
 
@@ -81,18 +81,74 @@ vertexShader(const VertexIn vertexIn [[stage_in]],
     return out;
 }
 
-// Fragment function
-fragment float4
-samplingShader(RasterizerData in [[stage_in]],
-               texture2d<half> colorTexture [[ texture(AAPLTextureIndexBaseColor) ]])
-{
-    constexpr sampler textureSampler (mag_filter::linear,
-                                      min_filter::linear);
 
+// Fragment function
+struct xlatMtlShaderInput2 {
+    float2 textureCoordinate;
+};
+
+struct xlatMtlShaderOutput2 {
+    float4 gl_FragColor;
+};
+
+fragment xlatMtlShaderOutput2
+samplingShader(xlatMtlShaderInput2 _mtl_i [[stage_in]],
+               //texture2d<half> colorTexture [[ texture(AAPLTextureIndexBaseColor) ]]，
+               texture2d<float> u_texture [[texture(0)]], sampler _mtlsmp_u_texture [[sampler(0)]])
+{
+//    constexpr sampler textureSampler (mag_filter::linear,
+//                                      min_filter::linear);
+
+    xlatMtlShaderOutput2 _mtl_o;
     // Sample the texture to obtain a color
-    const half4 colorSample = colorTexture.sample(textureSampler, in.textureCoordinate);
+    const float4 colorSample = u_texture.sample(_mtlsmp_u_texture, _mtl_i.textureCoordinate);
 
     // We return the color of the texture
-    return float4(colorSample);
+    //return float4(colorSample);
+    _mtl_o.gl_FragColor = (float4)colorSample;
+    return _mtl_o;
 }
 
+//struct xlatMtlShaderInput1 {
+//    float2 a_position [[attribute(0)]];
+//    float2 a_texCoord [[attribute(1)]];
+//};
+//struct xlatMtlShaderOutput1 {
+//    float4 gl_Position [[position]];
+//    float2 v_texCoord;
+//};
+//struct xlatMtlShaderUniform1 {
+//    float2 viewportSize;
+//};
+//vertex xlatMtlShaderOutput1 xlatMtlMain1 (xlatMtlShaderInput1 _mtl_i [[stage_in]], constant xlatMtlShaderUniform1& _mtl_u [[buffer(1)]])
+//{
+//    xlatMtlShaderOutput1 _mtl_o;
+//    float2 pixelSpaceLocation_1 = 0;
+//    float2 tmpvar_2 = 0;
+//    tmpvar_2 = (_mtl_i.a_position / (_mtl_u.viewportSize / 2.0));
+//    pixelSpaceLocation_1 = tmpvar_2;
+//    float4 tmpvar_3 = 0;
+//    tmpvar_3.zw = float2(0.0, 1.0);
+//    tmpvar_3.xy = pixelSpaceLocation_1.xy;
+//    _mtl_o.gl_Position = tmpvar_3;
+//    _mtl_o.v_texCoord = _mtl_i.a_texCoord;
+//    return _mtl_o;
+//}
+//
+//struct xlatMtlShaderInput2 {
+//    float2 v_texCoord;
+//};
+//struct xlatMtlShaderOutput2 {
+//    float4 gl_FragColor;
+//};
+//struct xlatMtlShaderUniform2 {
+//};
+//fragment xlatMtlShaderOutput2 xlatMtlMain2 (xlatMtlShaderInput2 _mtl_i [[stage_in]], constant xlatMtlShaderUniform2& _mtl_u [[buffer(1)]]
+//                                            ,   texture2d<float> u_texture [[texture(0)]], sampler _mtlsmp_u_texture [[sampler(0)]])
+//{
+//    xlatMtlShaderOutput2 _mtl_o;
+//    float4 tmpvar_1 = 0;
+//    tmpvar_1 = u_texture.sample(_mtlsmp_u_texture, _mtl_i.v_texCoord);
+//    _mtl_o.gl_FragColor = tmpvar_1;
+//    return _mtl_o;
+//}

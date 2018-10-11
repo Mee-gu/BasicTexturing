@@ -29,6 +29,7 @@ Implementation of renderer class which performs Metal setup and per frame render
 
     // The Metal texture object
     id<MTLTexture> _texture;
+    id<MTLSamplerState> _sampler;
 
     // The Metal buffer in which we store our vertex data
     id<MTLBuffer> _vertices;
@@ -211,6 +212,11 @@ Implementation of renderer class which performs Metal setup and per frame render
         vertexDescriptor.layouts[0].stride = sizeof(AAPLVertex);
         vertexDescriptor.layouts[0].stepFunction = MTLVertexStepFunctionPerVertex;
         
+        MTLSamplerDescriptor *samplerDescriptor = [MTLSamplerDescriptor new];
+        samplerDescriptor.minFilter = MTLSamplerMinMagFilterNearest;
+        samplerDescriptor.magFilter = MTLSamplerMinMagFilterLinear;
+        _sampler = [_device newSamplerStateWithDescriptor:samplerDescriptor];
+        
         
         // Load all the shader files with a .metal file extension in the project
         id<MTLLibrary> defaultLibrary = [_device newDefaultLibrary];
@@ -296,6 +302,7 @@ Implementation of renderer class which performs Metal setup and per frame render
         //   texture attribute qualifier also uses AAPLTextureIndexBaseColor for its index
         [renderEncoder setFragmentTexture:_texture
                                   atIndex:AAPLTextureIndexBaseColor];
+        [renderEncoder setFragmentSamplerState:_sampler atIndex:AAPLTextureIndexBaseColor];
 
         // Draw the vertices of our triangles
         [renderEncoder drawPrimitives:MTLPrimitiveTypeTriangle
