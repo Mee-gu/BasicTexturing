@@ -48,6 +48,44 @@ Implementation of renderer class which performs Metal setup and per frame render
     return imageRGBA;
 }
 
+- (id<MTLTexture>)textureForImage:(UIImage *)image
+{
+    CGImageRef imageRef = [image CGImage];
+    
+    // Create a suitable bitmap context for extracting the bits of the image
+    NSUInteger width = CGImageGetWidth(imageRef);
+    NSUInteger height = CGImageGetHeight(imageRef);
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+    uint8_t *rawData = (uint8_t *)calloc(height * width * 4, sizeof(uint8_t));
+    NSUInteger bytesPerPixel = 4;
+    NSUInteger bytesPerRow = bytesPerPixel * width;
+    NSUInteger bitsPerComponent = 8;
+    CGContextRef context = CGBitmapContextCreate(rawData, width, height,
+                                                 bitsPerComponent, bytesPerRow, colorSpace,
+                                                 kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
+    CGColorSpaceRelease(colorSpace);
+    
+    // Flip the context so the positive Y axis points down
+    CGContextTranslateCTM(context, 0, height);
+    CGContextScaleCTM(context, 1, -1);
+    
+    CGContextDrawImage(context, CGRectMake(0, 0, width, height), imageRef);
+    CGContextRelease(context);
+    
+    MTLTextureDescriptor *textureDescriptor = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatRGBA8Unorm
+                                                                                                 width:width
+                                                                                                height:height
+                                                                                             mipmapped:YES];
+    id<MTLTexture> texture = [_device newTextureWithDescriptor:textureDescriptor];
+    
+    MTLRegion region = MTLRegionMake2D(0, 0, width, height);
+    [texture replaceRegion:region mipmapLevel:0 withBytes:rawData bytesPerRow:bytesPerRow];
+    
+    free(rawData);
+    
+    return texture;
+}
+
 /// Initialize with the MetalKit view from which we'll obtain our Metal device
 - (nonnull instancetype)initWithMetalKitView:(nonnull MTKView *)mtkView
 {
@@ -56,7 +94,7 @@ Implementation of renderer class which performs Metal setup and per frame render
     {
         NSString * imageManJiLocation = [[NSBundle mainBundle] pathForResource:@"manji" ofType:@"jpeg"];
         UIImage * uiimageManJi = [UIImage imageWithContentsOfFile:imageManJiLocation];// NSBundle加载
-        const unsigned char* image = [self getUIImageData:uiimageManJi];
+        //const unsigned char* image = [self getUIImageData:uiimageManJi];
         
         
         
@@ -70,44 +108,46 @@ Implementation of renderer class which performs Metal setup and per frame render
 //
         _device = mtkView.device;
         
-        NSURL *imageFileLocation = [[NSBundle mainBundle] URLForResource:@"Image"
-                                                           withExtension:@"tga"];
+        _texture = [self textureForImage:uiimageManJi];
+        
+//        NSURL *imageFileLocation = [[NSBundle mainBundle] URLForResource:@"Image"
+//                                                           withExtension:@"tga"];
 
         //AAPLImage * image = [[AAPLImage alloc] initWithTGAFileAtLocation:imageFileLocation];
 
-        if(!image)
-        {
-            NSLog(@"Failed to create the image from %@", imageFileLocation.absoluteString);
-            return nil;
-        }
+//        if(!image)
+//        {
+//            NSLog(@"Failed to create the image from %@", imageFileLocation.absoluteString);
+//            return nil;
+//        }
 
-        MTLTextureDescriptor *textureDescriptor = [[MTLTextureDescriptor alloc] init];
-
-        // Indicate that each pixel has a blue, green, red, and alpha channel, where each channel is
-        // an 8-bit unsigned normalized value (i.e. 0 maps to 0.0 and 255 maps to 1.0)
-        textureDescriptor.pixelFormat = MTLPixelFormatRGBA8Unorm;// MTLPixelFormatBGRA8Unorm;
-
-         // Set the pixel dimensions of the texture
-        textureDescriptor.width = uiimageManJi.size.width;//image.width;
-        textureDescriptor.height = uiimageManJi.size.height;//image.height;
+//        MTLTextureDescriptor *textureDescriptor = [[MTLTextureDescriptor alloc] init];
+//
+//        // Indicate that each pixel has a blue, green, red, and alpha channel, where each channel is
+//        // an 8-bit unsigned normalized value (i.e. 0 maps to 0.0 and 255 maps to 1.0)
+//        textureDescriptor.pixelFormat = MTLPixelFormatRGBA8Unorm;// MTLPixelFormatBGRA8Unorm;
+//
+//         // Set the pixel dimensions of the texture
+//        textureDescriptor.width = uiimageManJi.size.width;//image.width;
+//        textureDescriptor.height = uiimageManJi.size.height;//image.height;
         
         
 
         // Create the texture from the device by using the descriptor
-        _texture = [_device newTextureWithDescriptor:textureDescriptor];
+//        _texture = [_device newTextureWithDescriptor:textureDescriptor];
 
         // Calculate the number of bytes per row of our image.
-        NSUInteger bytesPerRow = 4*uiimageManJi.size.width;//4 * image.width;
+//        NSUInteger bytesPerRow = 4*uiimageManJi.size.width;//4 * image.width;
 
 //        MTLRegion region = {
 //            { 0, 0, 0 },                   // MTLOrigin
 //            {image.width, image.height, 1} // MTLSize
 //        };
 
-        MTLRegion region = {
-            { 0, 0, 0 },                   // MTLOrigin
-            {uiimageManJi.size.width, uiimageManJi.size.height, 1} // MTLSize
-        };
+//        MTLRegion region = {
+//            { 0, 0, 0 },                   // MTLOrigin
+//            {uiimageManJi.size.width, uiimageManJi.size.height, 1} // MTLSize
+//        };
         
         // Copy the bytes from our data object into the texture
 //        [_texture replaceRegion:region
@@ -115,11 +155,11 @@ Implementation of renderer class which performs Metal setup and per frame render
 //                      withBytes:image.data.bytes
 //                    bytesPerRow:bytesPerRow];
 
-                [_texture replaceRegion:region
-                            mipmapLevel:0
-                              withBytes:image
-                            bytesPerRow:bytesPerRow];
-        
+//                [_texture replaceRegion:region
+//                            mipmapLevel:0
+//                              withBytes:image
+//                            bytesPerRow:bytesPerRow];
+//
         // Set up a simple MTLBuffer with our vertices which include texture coordinates
         static const AAPLVertex quadVertices[] =
         {
