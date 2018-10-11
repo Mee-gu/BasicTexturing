@@ -34,6 +34,10 @@ struct VertexIn
     float2 texcoord [[attribute(1)]];
 };
 
+struct xlatMtlShaderUniform {
+    float2 viewportSize;
+};
+
 // Vertex Function
 vertex RasterizerData
 vertexShader(const VertexIn vertexIn [[stage_in]],

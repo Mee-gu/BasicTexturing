@@ -38,4 +38,10 @@ typedef struct
     vector_float2 textureCoordinate;
 } AAPLVertex;
 
+typedef struct Uniforms
+{
+    vector_uint2 viewportSize;
+}Uniforms;
+
+
 #endif /* AAPLShaderTypes_h */

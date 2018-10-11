@@ -33,6 +33,7 @@ Implementation of renderer class which performs Metal setup and per frame render
     // The Metal buffer in which we store our vertex data
     id<MTLBuffer> _vertices;
 
+    id<MTLBuffer> _uniformBuffer;
     // The number of vertices in our vertex buffer
     NSUInteger _numVertices;
 
@@ -84,6 +85,22 @@ Implementation of renderer class which performs Metal setup and per frame render
     free(rawData);
     
     return texture;
+}
+
+- (void)updateUniforms
+{
+    if (!_uniformBuffer)
+    {
+        _uniformBuffer = [_device newBufferWithLength:sizeof(Uniforms)
+                                                      options:MTLResourceOptionCPUCacheModeDefault];
+    }
+    
+    Uniforms uniforms;
+    uniforms.viewportSize = _viewportSize;
+//    uniforms.modelViewProjectionMatrix = self.modelViewProjectionMatrix;
+//    uniforms.normalMatrix = simd::inverse(simd::transpose(UpperLeft3x3(self.modelViewMatrix)));
+    
+    memcpy([_uniformBuffer contents], &uniforms, sizeof(Uniforms));
 }
 
 /// Initialize with the MetalKit view from which we'll obtain our Metal device
@@ -244,6 +261,8 @@ Implementation of renderer class which performs Metal setup and per frame render
 - (void)drawInMTKView:(nonnull MTKView *)view
 {
 
+    [self updateUniforms];
+    
     // Create a new command buffer for each render pass to the current drawable
     id<MTLCommandBuffer> commandBuffer = [_commandQueue commandBuffer];
     commandBuffer.label = @"MyCommand";
@@ -267,9 +286,10 @@ Implementation of renderer class which performs Metal setup and per frame render
                                 offset:0
                               atIndex:AAPLVertexInputIndexVertices];
 
-        [renderEncoder setVertexBytes:&_viewportSize
-                               length:sizeof(_viewportSize)
-                              atIndex:AAPLVertexInputIndexViewportSize];
+//        [renderEncoder setVertexBytes:&_viewportSize
+//                               length:sizeof(_viewportSize)
+//                              atIndex:AAPLVertexInputIndexViewportSize];
+        [renderEncoder setVertexBuffer:_uniformBuffer offset:0 atIndex:1];
 
         // Set the texture object.  The AAPLTextureIndexBaseColor enum value corresponds
         ///  to the 'colorMap' argument in our 'samplingShader' function because its
