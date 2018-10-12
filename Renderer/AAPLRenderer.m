@@ -30,6 +30,8 @@ Implementation of renderer class which performs Metal setup and per frame render
     // The Metal texture object
     id<MTLTexture> _texture;
     id<MTLSamplerState> _sampler;
+    id<MTLTexture> _textureTag;
+    id<MTLSamplerState> _samplerTag;
 
     // The Metal buffer in which we store our vertex data
     id<MTLBuffer> _vertices;
@@ -126,58 +128,47 @@ Implementation of renderer class which performs Metal setup and per frame render
 //
         _device = mtkView.device;
         
+        //load jpeg
         _texture = [self textureForImage:uiimageManJi];
         
-//        NSURL *imageFileLocation = [[NSBundle mainBundle] URLForResource:@"Image"
-//                                                           withExtension:@"tga"];
+        //load tag
+        NSURL *imageFileLocation = [[NSBundle mainBundle] URLForResource:@"Image"
+                                                           withExtension:@"tga"];
+        AAPLImage * imageTag = [[AAPLImage alloc] initWithTGAFileAtLocation:imageFileLocation];
+        if(!imageTag)
+        {
+            NSLog(@"Failed to create the image from %@", imageFileLocation.absoluteString);
+            return nil;
+        }
+        MTLTextureDescriptor *textureDescriptor = [[MTLTextureDescriptor alloc] init];
 
-        //AAPLImage * image = [[AAPLImage alloc] initWithTGAFileAtLocation:imageFileLocation];
+        // Indicate that each pixel has a blue, green, red, and alpha channel, where each channel is
+        // an 8-bit unsigned normalized value (i.e. 0 maps to 0.0 and 255 maps to 1.0)
+        textureDescriptor.pixelFormat = MTLPixelFormatRGBA8Unorm;// MTLPixelFormatBGRA8Unorm;
 
-//        if(!image)
-//        {
-//            NSLog(@"Failed to create the image from %@", imageFileLocation.absoluteString);
-//            return nil;
-//        }
-
-//        MTLTextureDescriptor *textureDescriptor = [[MTLTextureDescriptor alloc] init];
-//
-//        // Indicate that each pixel has a blue, green, red, and alpha channel, where each channel is
-//        // an 8-bit unsigned normalized value (i.e. 0 maps to 0.0 and 255 maps to 1.0)
-//        textureDescriptor.pixelFormat = MTLPixelFormatRGBA8Unorm;// MTLPixelFormatBGRA8Unorm;
-//
-//         // Set the pixel dimensions of the texture
-//        textureDescriptor.width = uiimageManJi.size.width;//image.width;
-//        textureDescriptor.height = uiimageManJi.size.height;//image.height;
+         // Set the pixel dimensions of the texture
+        textureDescriptor.width = imageTag.width;
+        textureDescriptor.height = imageTag.height;
         
         
 
         // Create the texture from the device by using the descriptor
-//        _texture = [_device newTextureWithDescriptor:textureDescriptor];
+        _textureTag = [_device newTextureWithDescriptor:textureDescriptor];
 
         // Calculate the number of bytes per row of our image.
-//        NSUInteger bytesPerRow = 4*uiimageManJi.size.width;//4 * image.width;
+        NSUInteger bytesPerRow = 4 * imageTag.width;
 
-//        MTLRegion region = {
-//            { 0, 0, 0 },                   // MTLOrigin
-//            {image.width, image.height, 1} // MTLSize
-//        };
-
-//        MTLRegion region = {
-//            { 0, 0, 0 },                   // MTLOrigin
-//            {uiimageManJi.size.width, uiimageManJi.size.height, 1} // MTLSize
-//        };
+        MTLRegion region = {
+            { 0, 0, 0 },                   // MTLOrigin
+            {imageTag.width, imageTag.height, 1} // MTLSize
+        };
         
-        // Copy the bytes from our data object into the texture
-//        [_texture replaceRegion:region
-//                    mipmapLevel:0
-//                      withBytes:image.data.bytes
-//                    bytesPerRow:bytesPerRow];
+//         Copy the bytes from our data object into the texture
+        [_textureTag replaceRegion:region
+                    mipmapLevel:0
+                      withBytes:imageTag.data.bytes
+                    bytesPerRow:bytesPerRow];
 
-//                [_texture replaceRegion:region
-//                            mipmapLevel:0
-//                              withBytes:image
-//                            bytesPerRow:bytesPerRow];
-//
         // Set up a simple MTLBuffer with our vertices which include texture coordinates
         static const AAPLVertex quadVertices[] =
         {
@@ -306,6 +297,10 @@ Implementation of renderer class which performs Metal setup and per frame render
         [renderEncoder setFragmentTexture:_texture
                                   atIndex:AAPLTextureIndexBaseColor];
         [renderEncoder setFragmentSamplerState:_sampler atIndex:AAPLTextureIndexBaseColor];
+        
+        [renderEncoder setFragmentTexture:_textureTag
+                                  atIndex:1];
+        [renderEncoder setFragmentSamplerState:_sampler atIndex:1];
 
         // Draw the vertices of our triangles
         [renderEncoder drawPrimitives:MTLPrimitiveTypeTriangle
