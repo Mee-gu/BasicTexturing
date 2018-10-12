@@ -28,10 +28,9 @@ Implementation of renderer class which performs Metal setup and per frame render
     id<MTLCommandQueue> _commandQueue;
 
     // The Metal texture object
-    id<MTLTexture> _texture;
+    id<MTLTexture> _textureDemo;
     id<MTLSamplerState> _sampler;
-    id<MTLTexture> _textureTag;
-    id<MTLSamplerState> _samplerTag;
+    id<MTLTexture> _textureBlend;
 
     // The Metal buffer in which we store our vertex data
     id<MTLBuffer> _vertices;
@@ -112,62 +111,17 @@ Implementation of renderer class which performs Metal setup and per frame render
     self = [super init];
     if(self)
     {
-        NSString * imageManJiLocation = [[NSBundle mainBundle] pathForResource:@"manji" ofType:@"jpeg"];
-        UIImage * uiimageManJi = [UIImage imageWithContentsOfFile:imageManJiLocation];// NSBundle加载
-        //const unsigned char* image = [self getUIImageData:uiimageManJi];
+        NSString * imageDemoLocation = [[NSBundle mainBundle] pathForResource:@"demo" ofType:@"jpg"];
+        UIImage * uiimageDemo = [UIImage imageWithContentsOfFile:imageDemoLocation];// NSBundle加载
         
+        NSString * imageBlendLocation = [[NSBundle mainBundle] pathForResource:@"blend" ofType:@"png"];
+        UIImage * uiimageBlend = [UIImage imageWithContentsOfFile:imageBlendLocation];
         
-        
-//        {
-//            NSString * path = [[NSBundle mainBundle] pathForResource:@"filename" ofType:@"jpg"];
-//            UIImage * img = [[UIImage alloc]initWithContentsOfFile:path];
-//            CGImageRef image = [img CGImage];
-//            CFDataRef data = CGDataProviderCopyData(CGImageGetDataProvider(image));
-//            const unsigned char * buffer =  CFDataGetBytePtr(data);
-//        }
-//
         _device = mtkView.device;
         
         //load jpeg
-        _texture = [self textureForImage:uiimageManJi];
-        
-        //load tag
-        NSURL *imageFileLocation = [[NSBundle mainBundle] URLForResource:@"Image"
-                                                           withExtension:@"tga"];
-        AAPLImage * imageTag = [[AAPLImage alloc] initWithTGAFileAtLocation:imageFileLocation];
-        if(!imageTag)
-        {
-            NSLog(@"Failed to create the image from %@", imageFileLocation.absoluteString);
-            return nil;
-        }
-        MTLTextureDescriptor *textureDescriptor = [[MTLTextureDescriptor alloc] init];
-
-        // Indicate that each pixel has a blue, green, red, and alpha channel, where each channel is
-        // an 8-bit unsigned normalized value (i.e. 0 maps to 0.0 and 255 maps to 1.0)
-        textureDescriptor.pixelFormat = MTLPixelFormatRGBA8Unorm;// MTLPixelFormatBGRA8Unorm;
-
-         // Set the pixel dimensions of the texture
-        textureDescriptor.width = imageTag.width;
-        textureDescriptor.height = imageTag.height;
-        
-        
-
-        // Create the texture from the device by using the descriptor
-        _textureTag = [_device newTextureWithDescriptor:textureDescriptor];
-
-        // Calculate the number of bytes per row of our image.
-        NSUInteger bytesPerRow = 4 * imageTag.width;
-
-        MTLRegion region = {
-            { 0, 0, 0 },                   // MTLOrigin
-            {imageTag.width, imageTag.height, 1} // MTLSize
-        };
-        
-//         Copy the bytes from our data object into the texture
-        [_textureTag replaceRegion:region
-                    mipmapLevel:0
-                      withBytes:imageTag.data.bytes
-                    bytesPerRow:bytesPerRow];
+        _textureDemo = [self textureForImage:uiimageDemo];
+        _textureBlend = [self textureForImage:uiimageBlend];
 
         // Set up a simple MTLBuffer with our vertices which include texture coordinates
         static const AAPLVertex quadVertices[] =
@@ -294,11 +248,11 @@ Implementation of renderer class which performs Metal setup and per frame render
         // Set the texture object.  The AAPLTextureIndexBaseColor enum value corresponds
         ///  to the 'colorMap' argument in our 'samplingShader' function because its
         //   texture attribute qualifier also uses AAPLTextureIndexBaseColor for its index
-        [renderEncoder setFragmentTexture:_texture
+        [renderEncoder setFragmentTexture:_textureDemo
                                   atIndex:AAPLTextureIndexBaseColor];
         [renderEncoder setFragmentSamplerState:_sampler atIndex:AAPLTextureIndexBaseColor];
         
-        [renderEncoder setFragmentTexture:_textureTag
+        [renderEncoder setFragmentTexture:_textureBlend
                                   atIndex:1];
         [renderEncoder setFragmentSamplerState:_sampler atIndex:1];
 

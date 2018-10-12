@@ -156,32 +156,56 @@ struct xlatMtlShaderOutput2 {
 };
 struct xlatMtlShaderUniform2 {
 };
+float blendSoftLight (
+                      float base_1,
+                      float blend_2
+                      )
+{
+    float tmpvar_3 = 0;
+    if ((blend_2 < 0.5)) {
+        tmpvar_3 = (((2.0 * base_1) * blend_2) + ((base_1 * base_1) * (1.0 -
+                                                                       (2.0 * blend_2)
+                                                                       )));
+    } else {
+        float tmpvar_4 = 0;
+        tmpvar_4 = sqrt (base_1);
+        tmpvar_3 = ((tmpvar_4 * (
+                                 (2.0 * blend_2)
+                                 - 1.0)) + ((2.0 * base_1) * (1.0 - blend_2)));
+    };
+    return tmpvar_3;
+}
+
 fragment xlatMtlShaderOutput2 xlatMtlMain2 (xlatMtlShaderInput2 _mtl_i [[stage_in]], constant xlatMtlShaderUniform2& _mtl_u [[buffer(1)]]
                                             ,   texture2d<float> u_texture [[texture(0)]], sampler _mtlsmp_u_texture [[sampler(0)]]
                                             ,   texture2d<float> u_materialTexture [[texture(1)]], sampler _mtlsmp_u_materialTexture [[sampler(1)]])
 {
     xlatMtlShaderOutput2 _mtl_o;
-    float3 mixColor_1 = 0;
-    float3 srcColor_2 = 0;
-    float3 materialColor_3 = 0;
-    float4 tmpvar_4 = 0;
-    tmpvar_4 = u_materialTexture.sample(_mtlsmp_u_materialTexture, _mtl_i.v_texCoord);
-    float3 tmpvar_5 = 0;
-    tmpvar_5 = tmpvar_4.xyz;
-    materialColor_3 = tmpvar_5;
-    float4 tmpvar_6 = 0;
-    tmpvar_6 = u_texture.sample(_mtlsmp_u_texture, _mtl_i.v_texCoord);
-    float3 tmpvar_7 = 0;
-    tmpvar_7 = tmpvar_6.xyz;
-    srcColor_2 = tmpvar_7;
-    float3 tmpvar_8 = 0;
-    tmpvar_8 = mix (srcColor_2, materialColor_3, 0.5);
+    float3 resultColor_5 = 0;
+    float3 srcColor_6 = 0;
+    float3 materialColor_7 = 0;
+    float4 tmpvar_8 = 0;
+    tmpvar_8 = u_materialTexture.sample(_mtlsmp_u_materialTexture, _mtl_i.v_texCoord);
     float3 tmpvar_9 = 0;
-    tmpvar_9 = tmpvar_8;
-    mixColor_1 = tmpvar_9;
+    tmpvar_9 = tmpvar_8.xyz;
+    materialColor_7 = tmpvar_9;
     float4 tmpvar_10 = 0;
-    tmpvar_10.w = 1.0;
-    tmpvar_10.xyz = mixColor_1.xyz;
-    _mtl_o.gl_FragColor = tmpvar_10;
+    tmpvar_10 = u_texture.sample(_mtlsmp_u_texture, _mtl_i.v_texCoord);
+    float3 tmpvar_11 = 0;
+    tmpvar_11 = tmpvar_10.xyz;
+    srcColor_6 = tmpvar_11;
+    float tmpvar_12 = 0;
+    tmpvar_12 = blendSoftLight (materialColor_7.x, srcColor_6.x);
+    resultColor_5.x = tmpvar_12;
+    float tmpvar_13 = 0;
+    tmpvar_13 = blendSoftLight (materialColor_7.y, srcColor_6.y);
+    resultColor_5.y = float2(tmpvar_13).y;
+    float tmpvar_14 = 0;
+    tmpvar_14 = blendSoftLight (materialColor_7.z, srcColor_6.z);
+    resultColor_5.z = float3(tmpvar_14).z;
+    float4 tmpvar_15 = 0;
+    tmpvar_15.w = 1.0;
+    tmpvar_15.xyz = resultColor_5.xyz;
+    _mtl_o.gl_FragColor = tmpvar_15;
     return _mtl_o;
 }
