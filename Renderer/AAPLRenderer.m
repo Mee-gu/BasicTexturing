@@ -295,7 +295,10 @@ Implementation of renderer class which performs Metal setup and per frame render
 //        [renderEncoder setVertexBytes:&_viewportSize
 //                               length:sizeof(_viewportSize)
 //                              atIndex:AAPLVertexInputIndexViewportSize];
-        [renderEncoder setVertexBuffer:_uniformBuffer offset:0 atIndex:1];
+        
+        [renderEncoder setVertexBuffer:_uniformBuffer
+                                offset:0
+                               atIndex:1];
 
         // Set the texture object.  The AAPLTextureIndexBaseColor enum value corresponds
         ///  to the 'colorMap' argument in our 'samplingShader' function because its
