@@ -28,13 +28,18 @@ Implementation of renderer class which performs Metal setup and per frame render
     id<MTLCommandQueue> _commandQueue;
 
     // The Metal texture object
-    id<MTLTexture> _textureDemo;
+//    id<MTLTexture> _textureDemo;
+//    id<MTLTexture> _textureBlend;
+    id<MTLTexture> _textureBlend[2];
     id<MTLSamplerState> _sampler;
-    id<MTLTexture> _textureBlend;
+    
 
     // The Metal buffer in which we store our vertex data
     id<MTLBuffer> _vertices;
 
+    // Metal texture object to be referenced via an argument buffer
+    id<MTLTexture> _texture[2];
+    
     id<MTLBuffer> _uniformBuffer;
     // The number of vertices in our vertex buffer
     NSUInteger _numVertices;
@@ -43,6 +48,7 @@ Implementation of renderer class which performs Metal setup and per frame render
     vector_uint2 _viewportSize;
 }
 
+#if TARGET_OS_IPHONE
 -(const unsigned char*)getUIImageData:(UIImage *)image
 {
     CGImageRef cgimage = [image CGImage];
@@ -88,6 +94,7 @@ Implementation of renderer class which performs Metal setup and per frame render
     
     return texture;
 }
+#endif
 
 - (void)updateUniforms
 {
@@ -105,23 +112,54 @@ Implementation of renderer class which performs Metal setup and per frame render
     memcpy([_uniformBuffer contents], &uniforms, sizeof(Uniforms));
 }
 
+-(void) loadResources
+{
+    MTKTextureLoader *textureLoader = [[MTKTextureLoader alloc] initWithDevice:_device];
+    
+    NSError *error;
+    
+    for(NSUInteger i = 0; i < 2; i++)
+    {
+        NSString *textureName = [[NSString alloc] initWithFormat:@"Texture%lu", i];
+        
+        _texture[i] = [textureLoader newTextureWithName:textureName
+                                            scaleFactor:1.0
+                                                 bundle:nil
+                                                options:nil
+                                                  error:&error];
+        if(!_texture[i])
+        {
+            [NSException raise:NSGenericException
+                        format:@"Could not load texture with name %@: %@", textureName, error.localizedDescription];
+        }
+        
+        _texture[i].label = textureName;
+    }
+}
+
 /// Initialize with the MetalKit view from which we'll obtain our Metal device
 - (nonnull instancetype)initWithMetalKitView:(nonnull MTKView *)mtkView
 {
     self = [super init];
     if(self)
     {
+        _device = mtkView.device;
+        
         NSString * imageDemoLocation = [[NSBundle mainBundle] pathForResource:@"demo" ofType:@"jpg"];
         UIImage * uiimageDemo = [UIImage imageWithContentsOfFile:imageDemoLocation];// NSBundle加载
         
         NSString * imageBlendLocation = [[NSBundle mainBundle] pathForResource:@"blend" ofType:@"png"];
         UIImage * uiimageBlend = [UIImage imageWithContentsOfFile:imageBlendLocation];
         
-        _device = mtkView.device;
-        
         //load jpeg
-        _textureDemo = [self textureForImage:uiimageDemo];
-        _textureBlend = [self textureForImage:uiimageBlend];
+//        _textureDemo = [self textureForImage:uiimageDemo];
+//        _textureBlend = [self textureForImage:uiimageBlend];
+        _textureBlend[0] = [self textureForImage:uiimageDemo];
+        _textureBlend[1] = [self textureForImage:uiimageBlend];
+        
+        
+        // Load data for resources
+        [self loadResources];
 
         // Set up a simple MTLBuffer with our vertices which include texture coordinates
         static const AAPLVertex quadVertices[] =
@@ -248,14 +286,21 @@ Implementation of renderer class which performs Metal setup and per frame render
         // Set the texture object.  The AAPLTextureIndexBaseColor enum value corresponds
         ///  to the 'colorMap' argument in our 'samplingShader' function because its
         //   texture attribute qualifier also uses AAPLTextureIndexBaseColor for its index
-        [renderEncoder setFragmentTexture:_textureDemo
-                                  atIndex:AAPLTextureIndexBaseColor];
-        [renderEncoder setFragmentSamplerState:_sampler atIndex:AAPLTextureIndexBaseColor];
-        
-        [renderEncoder setFragmentTexture:_textureBlend
-                                  atIndex:1];
-        [renderEncoder setFragmentSamplerState:_sampler atIndex:1];
 
+        //for array of textures, you should use set each array element accessed with the [n] subscript syntax
+        [renderEncoder setFragmentTexture:_textureBlend[0]
+                                  atIndex:2];
+//        [renderEncoder setFragmentSamplerState:_sampler atIndex:AAPLTextureIndexBaseColor];
+        
+        [renderEncoder setFragmentTexture:_textureBlend[1]
+                                  atIndex:3];
+//        [renderEncoder setFragmentSamplerState:_sampler atIndex:1];
+
+        [renderEncoder setFragmentTexture:_texture[0]
+                                  atIndex:0];
+        [renderEncoder setFragmentTexture:_texture[1]
+                                  atIndex:1];
+        [renderEncoder setFragmentSamplerState:_sampler atIndex:0];
         // Draw the vertices of our triangles
         [renderEncoder drawPrimitives:MTLPrimitiveTypeTriangle
                           vertexStart:0

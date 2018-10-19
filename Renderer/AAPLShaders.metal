@@ -177,20 +177,21 @@ float blendSoftLight (
 }
 
 fragment xlatMtlShaderOutput2 xlatMtlMain2 (xlatMtlShaderInput2 _mtl_i [[stage_in]], constant xlatMtlShaderUniform2& _mtl_u [[buffer(1)]]
-                                            ,   texture2d<float> u_texture [[texture(0)]], sampler _mtlsmp_u_texture [[sampler(0)]]
-                                            ,   texture2d<float> u_materialTexture [[texture(1)]], sampler _mtlsmp_u_materialTexture [[sampler(1)]])
+                                            , array<texture2d<float>, 2>  u_AAPLTexture [[ texture(0) ]],
+                                            array<texture2d<float>, 2>  u_blendTexture [[ texture(2) ]], sampler _mtlsmp_u_texture [[sampler(0)]])
 {
     xlatMtlShaderOutput2 _mtl_o;
     float3 resultColor_5 = 0;
     float3 srcColor_6 = 0;
     float3 materialColor_7 = 0;
     float4 tmpvar_8 = 0;
-    tmpvar_8 = u_materialTexture.sample(_mtlsmp_u_materialTexture, _mtl_i.v_texCoord);
+    float2 blendTexcoord = (_mtl_i.v_texCoord - 0.5)*2.0;
+    tmpvar_8 = u_blendTexture[0].sample(_mtlsmp_u_texture, blendTexcoord);
     float3 tmpvar_9 = 0;
     tmpvar_9 = tmpvar_8.xyz;
     materialColor_7 = tmpvar_9;
     float4 tmpvar_10 = 0;
-    tmpvar_10 = u_texture.sample(_mtlsmp_u_texture, _mtl_i.v_texCoord);
+    tmpvar_10 = u_blendTexture[1].sample(_mtlsmp_u_texture, blendTexcoord);
     float3 tmpvar_11 = 0;
     tmpvar_11 = tmpvar_10.xyz;
     srcColor_6 = tmpvar_11;
@@ -206,6 +207,19 @@ fragment xlatMtlShaderOutput2 xlatMtlMain2 (xlatMtlShaderInput2 _mtl_i [[stage_i
     float4 tmpvar_15 = 0;
     tmpvar_15.w = 1.0;
     tmpvar_15.xyz = resultColor_5.xyz;
-    _mtl_o.gl_FragColor = tmpvar_15;
-    return _mtl_o;
+
+    if(_mtl_i.v_texCoord.x < 0.5)
+    {
+        //AAPL texture
+        float2 leftTexcoord = float2(_mtl_i.v_texCoord.x*2.0, _mtl_i.v_texCoord.y);
+        float4 eachTexture = u_AAPLTexture[0].sample(_mtlsmp_u_texture,leftTexcoord);
+        float4 worldTexture = u_AAPLTexture[1].sample(_mtlsmp_u_texture, leftTexcoord);
+        _mtl_o.gl_FragColor = eachTexture + worldTexture;
+    }
+    else
+    {
+        //blend texture
+        _mtl_o.gl_FragColor = tmpvar_15;
+    }
+   return _mtl_o;
 }

@@ -11,5 +11,9 @@ Header for renderer class which performs Metal setup and per frame rendering
 @interface AAPLRenderer : NSObject<MTKViewDelegate>
 
 - (nonnull instancetype)initWithMetalKitView:(nonnull MTKView *)mtkView;
+
 - (const unsigned char*)getUIImageData:(UIImage*)image;
+
+-(void) loadResources;
 @end
+

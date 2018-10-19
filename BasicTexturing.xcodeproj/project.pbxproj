@@ -34,6 +34,8 @@
 		63B42F161ED2063300859D09 /* AAPLShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = 3AF7E9C11EB64A46003BB06D /* AAPLShaders.metal */; };
 		63B42F171ED2063800859D09 /* AAPLShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = 3AF7E9C11EB64A46003BB06D /* AAPLShaders.metal */; };
 		63B42F181ED2063C00859D09 /* AAPLShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = 3AF7E9C11EB64A46003BB06D /* AAPLShaders.metal */; };
+		ED3B4C2B21788B4900D982A0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = ED3B4C2A21788B4900D982A0 /* Assets.xcassets */; };
+		ED3B4C2D21788E8200D982A0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = ED3B4C2A21788B4900D982A0 /* Assets.xcassets */; };
 		ED7DC50F21707F750009D1E2 /* demo.jpg in Resources */ = {isa = PBXBuildFile; fileRef = ED7DC50D21707F750009D1E2 /* demo.jpg */; };
 		ED7DC51021707F750009D1E2 /* blend.png in Resources */ = {isa = PBXBuildFile; fileRef = ED7DC50E21707F750009D1E2 /* blend.png */; };
 		EDD79641216EEDEB00DF8989 /* manji.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = EDD79640216EEDEB00DF8989 /* manji.jpeg */; };
@@ -68,6 +70,7 @@
 		3AFD656B1F71A8910008A125 /* AAPLAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AAPLAppDelegate.m; sourceTree = "<group>"; };
 		3AFD65741F71A8A70008A125 /* AAPLAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AAPLAppDelegate.h; sourceTree = "<group>"; };
 		3AFD65751F71A8AB0008A125 /* AAPLViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AAPLViewController.h; sourceTree = "<group>"; };
+		ED3B4C2A21788B4900D982A0 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		ED7DC50D21707F750009D1E2 /* demo.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = demo.jpg; sourceTree = "<group>"; };
 		ED7DC50E21707F750009D1E2 /* blend.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = blend.png; sourceTree = "<group>"; };
 		EDD79640216EEDEB00DF8989 /* manji.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = manji.jpeg; sourceTree = "<group>"; };
@@ -144,6 +147,7 @@
 		3AF7E9BC1EB64A46003BB06D /* Renderer */ = {
 			isa = PBXGroup;
 			children = (
+				ED3B4C2A21788B4900D982A0 /* Assets.xcassets */,
 				3A1857EF1EB7AF9E007D4F50 /* Image.tga */,
 				3AF7E9BE1EB64A46003BB06D /* AAPLRenderer.h */,
 				3AF7E9BF1EB64A46003BB06D /* AAPLRenderer.m */,
@@ -322,6 +326,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				ED3B4C2D21788E8200D982A0 /* Assets.xcassets in Resources */,
 				3AFD65641F71A7240008A125 /* Main.storyboard in Resources */,
 				ED7DC50F21707F750009D1E2 /* demo.jpg in Resources */,
 				EDD79641216EEDEB00DF8989 /* manji.jpeg in Resources */,
@@ -345,6 +350,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				3A1857F21EB7AF9E007D4F50 /* Image.tga in Resources */,
+				ED3B4C2B21788B4900D982A0 /* Assets.xcassets in Resources */,
 				3AFD655F1F71A71B0008A125 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -623,7 +629,7 @@
 				);
 				INFOPLIST_FILE = Application/macOS/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.example.apple-samplecode.BasicTexturing${SAMPLE_CODE_DISAMBIGUATOR}";
 				PRODUCT_NAME = BasicTexturing;
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -642,7 +648,7 @@
 				GCC_PREPROCESSOR_DEFINITIONS = TARGET_MACOS;
 				INFOPLIST_FILE = Application/macOS/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.example.apple-samplecode.BasicTexturing${SAMPLE_CODE_DISAMBIGUATOR}";
 				PRODUCT_NAME = BasicTexturing;
 				PROVISIONING_PROFILE_SPECIFIER = "";
