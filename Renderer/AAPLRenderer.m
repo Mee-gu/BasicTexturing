@@ -48,53 +48,53 @@ Implementation of renderer class which performs Metal setup and per frame render
     vector_uint2 _viewportSize;
 }
 
-#if TARGET_OS_IPHONE
--(const unsigned char*)getUIImageData:(UIImage *)image
-{
-    CGImageRef cgimage = [image CGImage];
-    CFDataRef data = CGDataProviderCopyData(CGImageGetDataProvider(cgimage));
-    const unsigned char * imageRGBA =  CFDataGetBytePtr(data);
-    return imageRGBA;
-}
-
-- (id<MTLTexture>)textureForImage:(UIImage *)image
-{
-    CGImageRef imageRef = [image CGImage];
-    
-    // Create a suitable bitmap context for extracting the bits of the image
-    NSUInteger width = CGImageGetWidth(imageRef);
-    NSUInteger height = CGImageGetHeight(imageRef);
-    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-    uint8_t *rawData = (uint8_t *)calloc(height * width * 4, sizeof(uint8_t));
-    NSUInteger bytesPerPixel = 4;
-    NSUInteger bytesPerRow = bytesPerPixel * width;
-    NSUInteger bitsPerComponent = 8;
-    CGContextRef context = CGBitmapContextCreate(rawData, width, height,
-                                                 bitsPerComponent, bytesPerRow, colorSpace,
-                                                 kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
-    CGColorSpaceRelease(colorSpace);
-    
-    // Flip the context so the positive Y axis points down
-    CGContextTranslateCTM(context, 0, height);
-    CGContextScaleCTM(context, 1, -1);
-    
-    CGContextDrawImage(context, CGRectMake(0, 0, width, height), imageRef);
-    CGContextRelease(context);
-    
-    MTLTextureDescriptor *textureDescriptor = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatRGBA8Unorm
-                                                                                                 width:width
-                                                                                                height:height
-                                                                                             mipmapped:YES];
-    id<MTLTexture> texture = [_device newTextureWithDescriptor:textureDescriptor];
-    
-    MTLRegion region = MTLRegionMake2D(0, 0, width, height);
-    [texture replaceRegion:region mipmapLevel:0 withBytes:rawData bytesPerRow:bytesPerRow];
-    
-    free(rawData);
-    
-    return texture;
-}
-#endif
+//#if TARGET_OS_IPHONE
+//-(const unsigned char*)getUIImageData:(UIImage *)image
+//{
+//    CGImageRef cgimage = [image CGImage];
+//    CFDataRef data = CGDataProviderCopyData(CGImageGetDataProvider(cgimage));
+//    const unsigned char * imageRGBA =  CFDataGetBytePtr(data);
+//    return imageRGBA;
+//}
+//
+//- (id<MTLTexture>)textureForImage:(UIImage *)image
+//{
+//    CGImageRef imageRef = [image CGImage];
+//    
+//    // Create a suitable bitmap context for extracting the bits of the image
+//    NSUInteger width = CGImageGetWidth(imageRef);
+//    NSUInteger height = CGImageGetHeight(imageRef);
+//    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+//    uint8_t *rawData = (uint8_t *)calloc(height * width * 4, sizeof(uint8_t));
+//    NSUInteger bytesPerPixel = 4;
+//    NSUInteger bytesPerRow = bytesPerPixel * width;
+//    NSUInteger bitsPerComponent = 8;
+//    CGContextRef context = CGBitmapContextCreate(rawData, width, height,
+//                                                 bitsPerComponent, bytesPerRow, colorSpace,
+//                                                 kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
+//    CGColorSpaceRelease(colorSpace);
+//    
+//    // Flip the context so the positive Y axis points down
+//    CGContextTranslateCTM(context, 0, height);
+//    CGContextScaleCTM(context, 1, -1);
+//    
+//    CGContextDrawImage(context, CGRectMake(0, 0, width, height), imageRef);
+//    CGContextRelease(context);
+//    
+//    MTLTextureDescriptor *textureDescriptor = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatRGBA8Unorm
+//                                                                                                 width:width
+//                                                                                                height:height
+//                                                                                             mipmapped:YES];
+//    id<MTLTexture> texture = [_device newTextureWithDescriptor:textureDescriptor];
+//    
+//    MTLRegion region = MTLRegionMake2D(0, 0, width, height);
+//    [texture replaceRegion:region mipmapLevel:0 withBytes:rawData bytesPerRow:bytesPerRow];
+//    
+//    free(rawData);
+//    
+//    return texture;
+//}
+//#endif
 
 - (void)updateUniforms
 {
@@ -146,17 +146,26 @@ Implementation of renderer class which performs Metal setup and per frame render
         _device = mtkView.device;
         
         NSString * imageDemoLocation = [[NSBundle mainBundle] pathForResource:@"demo" ofType:@"jpg"];
-        UIImage * uiimageDemo = [UIImage imageWithContentsOfFile:imageDemoLocation];// NSBundle加载
+//        UIImage * uiimageDemo = [UIImage imageWithContentsOfFile:imageDemoLocation];// NSBundle加载
         
         NSString * imageBlendLocation = [[NSBundle mainBundle] pathForResource:@"blend" ofType:@"png"];
-        UIImage * uiimageBlend = [UIImage imageWithContentsOfFile:imageBlendLocation];
+//        UIImage * uiimageBlend = [UIImage imageWithContentsOfFile:imageBlendLocation];
         
         //load jpeg
 //        _textureDemo = [self textureForImage:uiimageDemo];
 //        _textureBlend = [self textureForImage:uiimageBlend];
-        _textureBlend[0] = [self textureForImage:uiimageDemo];
-        _textureBlend[1] = [self textureForImage:uiimageBlend];
+//        _textureBlend[0] = [self textureForImage:uiimageDemo];
+//        _textureBlend[1] = [self textureForImage:uiimageBlend];
         
+        //TextureLoader
+        {
+            NSURL* urlDemo = [NSURL fileURLWithPath:imageDemoLocation];
+            NSURL* urlBlend = [NSURL fileURLWithPath:imageBlendLocation];
+            NSError *error;
+            MTKTextureLoader *texture_loader = [[MTKTextureLoader alloc] initWithDevice:_device];
+            _textureBlend[0] = [texture_loader newTextureWithContentsOfURL:urlDemo options:nil error:&error];
+            _textureBlend[1] = [texture_loader newTextureWithContentsOfURL:urlBlend options:nil error:&error];
+        }
         
         // Load data for resources
         [self loadResources];
@@ -165,13 +174,13 @@ Implementation of renderer class which performs Metal setup and per frame render
         static const AAPLVertex quadVertices[] =
         {
             // Pixel positions, Texture coordinates
-            { {  250,  -250 },  { 1.f, 0.f } },
-            { { -250,  -250 },  { 0.f, 0.f } },
-            { { -250,   250 },  { 0.f, 1.f } },
+            { {  250,  -250 },  { 1.f, 1.f } },
+            { { -250,  -250 },  { 0.f, 1.f } },
+            { { -250,   250 },  { 0.f, 0.f } },
 
-            { {  250,  -250 },  { 1.f, 0.f } },
-            { { -250,   250 },  { 0.f, 1.f } },
-            { {  250,   250 },  { 1.f, 1.f } },
+            { {  250,  -250 },  { 1.f, 1.f } },
+            { { -250,   250 },  { 0.f, 0.f } },
+            { {  250,   250 },  { 1.f, 0.f } },
         };
 
         // Create our vertex buffer, and initialize it with our quadVertices array

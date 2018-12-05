@@ -38,6 +38,9 @@
 		ED3B4C2D21788E8200D982A0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = ED3B4C2A21788B4900D982A0 /* Assets.xcassets */; };
 		ED7DC50F21707F750009D1E2 /* demo.jpg in Resources */ = {isa = PBXBuildFile; fileRef = ED7DC50D21707F750009D1E2 /* demo.jpg */; };
 		ED7DC51021707F750009D1E2 /* blend.png in Resources */ = {isa = PBXBuildFile; fileRef = ED7DC50E21707F750009D1E2 /* blend.png */; };
+		EDB6DAE021B801D7001A761F /* blend.png in Resources */ = {isa = PBXBuildFile; fileRef = ED7DC50E21707F750009D1E2 /* blend.png */; };
+		EDB6DAE121B801DA001A761F /* demo.jpg in Resources */ = {isa = PBXBuildFile; fileRef = ED7DC50D21707F750009D1E2 /* demo.jpg */; };
+		EDB6DAE221B801DD001A761F /* manji.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = EDD79640216EEDEB00DF8989 /* manji.jpeg */; };
 		EDD79641216EEDEB00DF8989 /* manji.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = EDD79640216EEDEB00DF8989 /* manji.jpeg */; };
 /* End PBXBuildFile section */
 
@@ -350,8 +353,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				3A1857F21EB7AF9E007D4F50 /* Image.tga in Resources */,
+				EDB6DAE121B801DA001A761F /* demo.jpg in Resources */,
+				EDB6DAE021B801D7001A761F /* blend.png in Resources */,
 				ED3B4C2B21788B4900D982A0 /* Assets.xcassets in Resources */,
 				3AFD655F1F71A71B0008A125 /* Main.storyboard in Resources */,
+				EDB6DAE221B801DD001A761F /* manji.jpeg in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
